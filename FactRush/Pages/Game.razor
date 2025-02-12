@@ -1,7 +1,9 @@
 ﻿@page "/game"
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject FactRush.Services.ScoreService ScoreService
 @using FactRush.Components
+@using FactRush.Services
 
 <div class="container mt-5 text-center">
     @if (!gameStarted && !gameOver)
@@ -156,6 +158,10 @@
     {
         gameOver = true;
         gameStarted = false;
+        if (!string.IsNullOrWhiteSpace(playerName) && score > 0)
+        {
+            ScoreService.AddScore(new ScoreEntry(playerName, score));
+        }
         await InvokeAsync(StateHasChanged);
     }
 
