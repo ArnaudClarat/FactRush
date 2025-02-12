@@ -1,34 +1,28 @@
 ﻿@page "/"
 @inject NavigationManager Navigation
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 text-center">
-            <h1 class="display-4">QuizRush</h1>
-            <p class="lead">Testez votre rapidité et grimpez au classement !</p>
-            <button class="btn btn-primary btn-lg mb-4" @onclick="NavigateToGame">Let's play!</button>
-            <h2 class="h3 mt-5 mb-3">Meilleurs Scores</h2>
-            <ul class="list-group">
-                @foreach (var score in TopScores)
-                {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        @score.PlayerName
-                        <span class="badge bg-primary rounded-pill">@score.Points pts</span>
-                    </li>
-                }
-            </ul>
-        </div>
-    </div>
+<div class="container mt-5 text-center">
+    <h1 class="display-4">QuizRush</h1>
+    <p class="lead">Testez votre rapidité et grimpez au classement !</p>
+    <button class="btn btn-primary btn-lg mb-4" @onclick='() => Navigation.NavigateTo("/game")'>Let's play!</button>
+    <h2 class="h3 mt-5 mb-3">Meilleurs Scores</h2>
+    <ul class="list-group">
+        @foreach (var score in TopScores)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                @score.PlayerName
+                <span class="badge bg-primary rounded-pill">@score.Points pts</span>
+            </li>
+        }
+    </ul>
 </div>
 
 @code {
-    private void NavigateToGame() => Navigation.NavigateTo("/game");
-
     private List<ScoreEntry> TopScores = new()
     {
-        new ScoreEntry("Alice", 1200),
-        new ScoreEntry("Bob", 1100),
-        new ScoreEntry("Charlie", 1000)
+        new("Alice", 1200),
+        new("Bob", 1100),
+        new("Charlie", 1000)
     };
 
     private record ScoreEntry(string PlayerName, int Points);

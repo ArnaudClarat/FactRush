@@ -23,7 +23,7 @@
         <h2 class="text-danger">Game Over!</h2>
         <p class="lead">Votre score : @score</p>
         <button class="btn btn-primary" @onclick="RestartGame">Try again</button>
-        <button class="btn btn-primary" @onclick="GoBackHome">Home</button>
+        <button class="btn btn-primary" @onclick='()=> Navigation.NavigateTo("/")'>Home</button>
     }
     else
     {
@@ -45,8 +45,7 @@
     // Variables de jeu
     private string playerName = string.Empty;
     private string token = "";
-    public Question currentQuestion = new Question { Text = "Loading", CorrectAnswer = "True" };
-    private string correctAnswer = "";
+    public Question currentQuestion = new Question { Text = "Loading", CorrectAnswer = "" };
     private readonly static int timer = 50;
     private int timeRemaining = timer;
     public int score = 0;
@@ -55,6 +54,10 @@
     private bool answersEnabled = false;
     private System.Threading.Timer? countdownTimer;
 
+    /// <summary>
+    /// Called when the component is initialized.
+    /// Requests a unique token from the OpenTDB API.
+    /// </summary>
     protected override async Task OnInitializedAsync()
     {
         // Obtenir un token unique au début de la partie
@@ -66,14 +69,21 @@
         }
     }
 
+    /// <summary>
+    /// Starts the game by resetting the score and loading the first question.
+    /// </summary>
     private async Task StartGame()
     {
         gameStarted = true;
         gameOver = false;
         score = 0;
+        currentQuestion = new Question { Text = "Loading", CorrectAnswer = "" };
         await LoadNextQuestion();
     }
 
+    /// <summary>
+    /// Loads the next question from the API and starts a countdown timer.
+    /// </summary>
     private async Task LoadNextQuestion()
     {
         timeRemaining = timer;
@@ -81,49 +91,49 @@
         countdownTimer?.Dispose();
         countdownTimer = new System.Threading.Timer(async _ =>
         {
-            timeRemaining--;
-            if (timeRemaining <= 0)
+            if (--timeRemaining <= 0)
             {
                 await InvokeAsync(EndGame);
                 countdownTimer?.Dispose();
             }
-            await InvokeAsync(StateHasChanged);
+            else
+            {
+                await InvokeAsync(StateHasChanged);
+            }
         }, null, 1000, 1000);
 
-        _ = Task.Run(async () =>
+        _ = Task.Delay(5000).ContinueWith(_ =>
         {
-            await Task.Delay(5000);
             answersEnabled = true;
-            await InvokeAsync(StateHasChanged);
+            InvokeAsync(StateHasChanged);
         });
 
         string url = $"https://opentdb.com/api.php?amount=1&type=boolean&token={token}";
         var result = await Http.GetFromJsonAsync<QuestionResponse>(url);
         if (result != null && result.ResponseCode == 0 && result.Questions.Length > 0)
         {
-            foreach (var question in result.Questions)
-            {
-                question.DecodeHtmlEntities();
-            }
             currentQuestion = result.Questions[0];
+            currentQuestion.DecodeHtmlEntities();
             Console.WriteLine($"New question loaded: {currentQuestion}");
             StateHasChanged();
         }
         else
         {
             Console.WriteLine("No question loaded, ending game.");
-            // Si aucune question n'est renvoyée, terminer la partie
             await EndGame();
         }
     }
 
+    /// <summary>
+    /// Submits the player's answer and either loads the next question or ends the game.
+    /// </summary>
+    /// <param name="answer">The answer provided by the player.</param>
     private async Task SubmitAnswer(string answer)
     {
         countdownTimer?.Dispose();
 
         if (answer == currentQuestion.CorrectAnswer)
         {
-            // Bonne réponse, augmenter le score et charger la question suivante
             score += currentQuestion.Difficulty switch
             {
                 "easy" => 100,
@@ -135,11 +145,13 @@
         }
         else
         {
-            // Mauvaise réponse, terminer la partie
             await EndGame();
         }
     }
 
+    /// <summary>
+    /// Ends the game, adds the player's score to the top scores list if applicable, and updates the UI.
+    /// </summary>
     private async Task EndGame()
     {
         gameOver = true;
@@ -147,15 +159,13 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task RestartGame()
-    {
-        await StartGame();
-    }
+    /// <summary>
+    /// Restarts the game.
+    /// </summary>
+    private async Task RestartGame() => await StartGame();
 
-    public void TriggerStateHasChanged()
-    {
-        StateHasChanged();
-    }
-    private void GoBackHome() => Navigation.NavigateTo("/");
-
+    /// <summary>
+    /// Triggers a UI state change.
+    /// </summary>
+    public void TriggerStateHasChanged() => StateHasChanged();
 }
