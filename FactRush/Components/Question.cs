@@ -30,7 +30,7 @@ namespace FactRush.Components
 
         public override string ToString()
         {
-            return $"Text: \"{Text}\", CorrectAnswer: \"{CorrectAnswer}\"";
+            return $"Text: \"{Text}\", CorrectAnswer: \"{CorrectAnswer}\", Difficulty: \"{Difficulty}\"";
         }
     }
 }

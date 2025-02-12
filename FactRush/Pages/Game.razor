@@ -23,7 +23,7 @@
         <h2 class="text-danger">Game Over!</h2>
         <p class="lead">Votre score : @score</p>
         <button class="btn btn-primary" @onclick="RestartGame">Try again</button>
-        <button class="btn btn-primary">Home</button>
+        <button class="btn btn-primary" @onclick="GoBackHome">Home</button>
     }
     else
     {
@@ -34,7 +34,10 @@
             <button class="btn btn-outline-primary" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer("True")'>True</button>
             <button class="btn btn-outline-primary" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer("False")'>False</button>
         </div>
-        <p>Temps restant : @timeRemaining s</p>
+        <p style="color: @(currentQuestion.Difficulty == "easy" ? "green" : currentQuestion.Difficulty == "medium" ? "orange" : "red")">
+            Temps restant : @timeRemaining s
+        </p>
+        <h2>Score : @score</h2>
     }
 </div>
 
@@ -73,8 +76,6 @@
 
     private async Task LoadNextQuestion()
     {
-        Console.WriteLine("Loading next question");
-        // Réinitialiser le timer
         timeRemaining = timer;
         answersEnabled = false;
         countdownTimer?.Dispose();
@@ -96,10 +97,8 @@
             await InvokeAsync(StateHasChanged);
         });
 
-        // Appel de l'API pour obtenir une question de type True/False
         string url = $"https://opentdb.com/api.php?amount=1&type=boolean&token={token}";
         var result = await Http.GetFromJsonAsync<QuestionResponse>(url);
-        Console.WriteLine($"result : {result}");
         if (result != null && result.ResponseCode == 0 && result.Questions.Length > 0)
         {
             foreach (var question in result.Questions)
@@ -107,7 +106,7 @@
                 question.DecodeHtmlEntities();
             }
             currentQuestion = result.Questions[0];
-            Console.WriteLine($"New question loaded: {currentQuestion.Text}");
+            Console.WriteLine($"New question loaded: {currentQuestion}");
             StateHasChanged();
         }
         else
@@ -125,7 +124,13 @@
         if (answer == currentQuestion.CorrectAnswer)
         {
             // Bonne réponse, augmenter le score et charger la question suivante
-            score++;
+            score += currentQuestion.Difficulty switch
+            {
+                "easy" => 100,
+                "medium" => 200,
+                "hard" => 500,
+                _ => 0
+            };
             await LoadNextQuestion();
         }
         else
@@ -151,5 +156,6 @@
     {
         StateHasChanged();
     }
+    private void GoBackHome() => Navigation.NavigateTo("/");
 
 }
