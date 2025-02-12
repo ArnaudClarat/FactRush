@@ -5,6 +5,8 @@ VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FactRush", "FactRush\FactRush.csproj", "{4D5C2A94-F7D2-480B-A591-664DEE48B840}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FactRushTest", "FactRushTest\FactRushTest.csproj", "{35E8CE51-F8BE-4E3B-A6C3-7DB7364E797B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{4D5C2A94-F7D2-480B-A591-664DEE48B840}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D5C2A94-F7D2-480B-A591-664DEE48B840}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D5C2A94-F7D2-480B-A591-664DEE48B840}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35E8CE51-F8BE-4E3B-A6C3-7DB7364E797B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35E8CE51-F8BE-4E3B-A6C3-7DB7364E797B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35E8CE51-F8BE-4E3B-A6C3-7DB7364E797B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35E8CE51-F8BE-4E3B-A6C3-7DB7364E797B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

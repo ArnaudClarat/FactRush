@@ -6,9 +6,7 @@
         <div class="col-md-8 text-center">
             <h1 class="display-4">QuizRush</h1>
             <p class="lead">Testez votre rapidité et grimpez au classement !</p>
-            <button class="btn btn-primary btn-lg mb-4" @onclick="NavigateToRegister">
-                S'inscrire
-            </button>
+            <button class="btn btn-primary btn-lg mb-4" @onclick="NavigateToGame">Let's play!</button>
             <h2 class="h3 mt-5 mb-3">Meilleurs Scores</h2>
             <ul class="list-group">
                 @foreach (var score in TopScores)
@@ -24,7 +22,7 @@
 </div>
 
 @code {
-    private void NavigateToRegister() => Navigation.NavigateTo("/register");
+    private void NavigateToGame() => Navigation.NavigateTo("/game");
 
     private List<ScoreEntry> TopScores = new()
     {

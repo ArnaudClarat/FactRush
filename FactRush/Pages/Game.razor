@@ -1,0 +1,155 @@
+﻿@page "/game"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using FactRush.Components
+
+<div class="container mt-5 text-center">
+    @if (!gameStarted && !gameOver)
+    {
+        <h1 class="mb-4">QuizRush</h1>
+        <p class="lead">Test your general knowledge and speed !</p>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="playerName" class="form-label">Pseudo : </label>
+                    <input type="text" id="playerName" class="form-control" @bind="playerName" placeholder="Pseudo" />
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-success btn-lg" @onclick="StartGame">Start the game</button>
+    }
+    else if (gameOver)
+    {
+        <h2 class="text-danger">Game Over!</h2>
+        <p class="lead">Votre score : @score</p>
+        <button class="btn btn-primary" @onclick="RestartGame">Try again</button>
+        <button class="btn btn-primary">Home</button>
+    }
+    else
+    {
+        <div class="mb-3">
+            <h2>@currentQuestion.Text</h2>
+        </div>
+        <div class="mb-3">
+            <button class="btn btn-outline-primary" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer("True")'>True</button>
+            <button class="btn btn-outline-primary" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer("False")'>False</button>
+        </div>
+        <p>Temps restant : @timeRemaining s</p>
+    }
+</div>
+
+@code {
+    // Variables de jeu
+    private string playerName = string.Empty;
+    private string token = "";
+    public Question currentQuestion = new Question { Text = "Loading", CorrectAnswer = "True" };
+    private string correctAnswer = "";
+    private readonly static int timer = 50;
+    private int timeRemaining = timer;
+    public int score = 0;
+    private bool gameStarted = false;
+    public bool gameOver = false;
+    private bool answersEnabled = false;
+    private System.Threading.Timer? countdownTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtenir un token unique au début de la partie
+        // Demander un token à l'API d'OpenTDB
+        var response = await Http.GetFromJsonAsync<TokenResponse>("https://opentdb.com/api_token.php?command=request");
+        if (response != null && response.ResponseCode == 0)
+        {
+            token = response.Token;
+        }
+    }
+
+    private async Task StartGame()
+    {
+        gameStarted = true;
+        gameOver = false;
+        score = 0;
+        await LoadNextQuestion();
+    }
+
+    private async Task LoadNextQuestion()
+    {
+        Console.WriteLine("Loading next question");
+        // Réinitialiser le timer
+        timeRemaining = timer;
+        answersEnabled = false;
+        countdownTimer?.Dispose();
+        countdownTimer = new System.Threading.Timer(async _ =>
+        {
+            timeRemaining--;
+            if (timeRemaining <= 0)
+            {
+                await InvokeAsync(EndGame);
+                countdownTimer?.Dispose();
+            }
+            await InvokeAsync(StateHasChanged);
+        }, null, 1000, 1000);
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(5000);
+            answersEnabled = true;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        // Appel de l'API pour obtenir une question de type True/False
+        string url = $"https://opentdb.com/api.php?amount=1&type=boolean&token={token}";
+        var result = await Http.GetFromJsonAsync<QuestionResponse>(url);
+        Console.WriteLine($"result : {result}");
+        if (result != null && result.ResponseCode == 0 && result.Questions.Length > 0)
+        {
+            foreach (var question in result.Questions)
+            {
+                question.DecodeHtmlEntities();
+            }
+            currentQuestion = result.Questions[0];
+            Console.WriteLine($"New question loaded: {currentQuestion.Text}");
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("No question loaded, ending game.");
+            // Si aucune question n'est renvoyée, terminer la partie
+            await EndGame();
+        }
+    }
+
+    private async Task SubmitAnswer(string answer)
+    {
+        countdownTimer?.Dispose();
+
+        if (answer == currentQuestion.CorrectAnswer)
+        {
+            // Bonne réponse, augmenter le score et charger la question suivante
+            score++;
+            await LoadNextQuestion();
+        }
+        else
+        {
+            // Mauvaise réponse, terminer la partie
+            await EndGame();
+        }
+    }
+
+    private async Task EndGame()
+    {
+        gameOver = true;
+        gameStarted = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RestartGame()
+    {
+        await StartGame();
+    }
+
+    public void TriggerStateHasChanged()
+    {
+        StateHasChanged();
+    }
+
+}
