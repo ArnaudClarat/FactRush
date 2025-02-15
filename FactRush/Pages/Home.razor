@@ -5,5 +5,19 @@
 <div class="container mt-5 text-center">
     <h1 class="display-4">QuizRush</h1>
     <p class="lead">Test your general knowledge and climb the leaderboard!</p>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="playerName" class="form-label">Pseudo : </label>
+                <input type="text" id="playerName" class="form-control" @bind="playerName" placeholder="Pseudo" />
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-primary btn-lg mb-4" @onclick='() => Navigation.NavigateTo($"/game/{playerName}")'>Let's play!</button>
     <TopScores></TopScores>
 </div>
+
+
+@code {
+    private string playerName = string.Empty;
+}

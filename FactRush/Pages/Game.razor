@@ -1,24 +1,12 @@
-﻿@page "/game"
+﻿@page "/game/{playerName}"
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject FactRush.Services.ScoreService ScoreService
+@using Microsoft.AspNetCore.Components
+
 
 <div class="container mt-5 text-center">
-    @if (!gameStarted && !gameOver)
-    {
-        <h1 class="mb-4">QuizRush</h1>
-        <p class="lead">Test your general knowledge and speed !</p>
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label for="playerName" class="form-label">Pseudo : </label>
-                    <input type="text" id="playerName" class="form-control" @bind="playerName" placeholder="Pseudo" />
-                </div>
-            </div>
-        </div>
-        <button class="btn btn-success btn-lg" @onclick="StartGame">Start the game</button>
-    }
-    else if (gameOver)
+    @if (gameOver)
     {
         <h2 class="text-danger">Game Over!</h2>
         <p class="lead">Votre score : @score</p>
@@ -67,7 +55,8 @@
 
 @code {
     // Variables de jeu
-    private string playerName = string.Empty;
+    [Parameter]
+    public string playerName { get; set; } = "";
     private string token = "";
     public Question currentQuestion = new Question { Text = "Loading", CorrectAnswer = "" };
     private readonly static int timer = 50;
@@ -92,6 +81,7 @@
         {
             token = response.Token;
         }
+        await LoadNextQuestion();
     }
 
     /// <summary>
@@ -141,12 +131,11 @@
             currentQuestion.DecodeHtmlEntities();
             GenerateAnswerChoices();
             Console.WriteLine($"New question loaded: {currentQuestion}");
-            StateHasChanged();
         }
         else
         {
             Console.WriteLine("No question loaded, ending game.");
-            await EndGame();
+            EndGame();
         }
     }
 
@@ -171,14 +160,14 @@
         }
         else
         {
-            await EndGame();
+            EndGame();
         }
     }
 
     /// <summary>
     /// Ends the game, adds the player's score to the top scores list if applicable, and updates the UI.
     /// </summary>
-    private async Task EndGame()
+    private void EndGame()
     {
         gameOver = true;
         gameStarted = false;
@@ -186,7 +175,6 @@
         {
             ScoreService.AddScore(new ScoreEntry(playerName, score));
         }
-        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>
