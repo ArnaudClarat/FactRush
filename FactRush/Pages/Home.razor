@@ -4,9 +4,9 @@
 
 <div class="container mt-5 text-center">
     <h1 class="display-4">QuizRush</h1>
-    <p class="lead">Testez votre rapidité et grimpez au classement !</p>
+    <p class="lead">Test your general knowledge and climb the leaderboard!</p>
     <button class="btn btn-primary btn-lg mb-4" @onclick='() => Navigation.NavigateTo("/game")'>Let's play!</button>
-    <h2 class="h3 mt-5 mb-3">Meilleurs Scores</h2>
+    <h2 class="h3 mt-5 mb-3">Best Scores</h2>
     <ul class="list-group">
         @foreach (var score in ScoreService.TopScores)
         {
