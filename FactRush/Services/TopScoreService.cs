@@ -4,13 +4,13 @@
     /// Represents a player's score entry.
     /// </summary>
     /// <param name="PlayerName">The name of the player.</param>
-    /// <param name="Points">The number of points the player has achieved.</param>
-    public record ScoreEntry(string PlayerName, int Points);
+    /// <param name="Score">The number of points the player has achieved.</param>
+    public record ScoreEntry(string PlayerName, int Score);
 
     /// <summary>
     /// Service for managing player scores.
     /// </summary>
-    public class ScoreService
+    public class TopScoreService
     {
         /// <summary>
         /// Gets the list of top scores.
@@ -31,7 +31,7 @@
         {
             TopScores.Add(entry);
             TopScores = TopScores
-                .OrderByDescending(s => s.Points)
+                .OrderByDescending(s => s.Score)
                 .Take(10)
                 .ToList();
         }
