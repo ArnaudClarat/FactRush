@@ -32,10 +32,34 @@
         <div class="mb-3">
             <h2>@currentQuestion.Text</h2>
         </div>
-        <div class="mb-3">
-            <button class="btn btn-outline-primary" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer("True")'>True</button>
-            <button class="btn btn-outline-primary" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer("False")'>False</button>
-        </div>
+        @if (answerChoices != null && answerChoices.Count >= 2)
+        {
+            <div class="row justify-content-center mb-3 g-2">
+                <div class="col-md-5">
+                    <button class="btn btn-outline-primary w-100" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer(answerChoices[0])'>
+                        @answerChoices[0]
+                    </button>
+                </div>
+                <div class="col-md-5">
+                    <button class="btn btn-outline-primary w-100" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer(answerChoices[1])'>
+                        @answerChoices[1]
+                    </button>
+                </div>
+                @if(answerChoices.Count == 4)
+                {
+                    <div class="col-md-5">
+                        <button class="btn btn-outline-primary w-100" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer(answerChoices[2])'>
+                            @answerChoices[2]
+                        </button>
+                    </div>
+                    <div class="col-md-5">
+                        <button class="btn btn-outline-primary w-100" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer(answerChoices[3])'>
+                            @answerChoices[3]
+                        </button>
+                    </div>
+                }
+            </div>
+        }
         <p style="color: @(currentQuestion.Difficulty == "easy" ? "green" : currentQuestion.Difficulty == "medium" ? "orange" : "red")">
             Temps restant : @timeRemaining s
         </p>
@@ -55,6 +79,7 @@
     public bool gameOver = false;
     private bool answersEnabled = false;
     private System.Threading.Timer? countdownTimer;
+    private List<string> answerChoices = new();
 
     /// <summary>
     /// Called when the component is initialized.
@@ -110,12 +135,13 @@
             InvokeAsync(StateHasChanged);
         });
 
-        string url = $"https://opentdb.com/api.php?amount=1&type=boolean&token={token}";
+        string url = $"https://opentdb.com/api.php?amount=1&token={token}";
         var result = await Http.GetFromJsonAsync<QuestionResponse>(url);
         if (result != null && result.ResponseCode == 0 && result.Questions.Length > 0)
         {
             currentQuestion = result.Questions[0];
             currentQuestion.DecodeHtmlEntities();
+            GenerateAnswerChoices();
             Console.WriteLine($"New question loaded: {currentQuestion}");
             StateHasChanged();
         }
@@ -163,6 +189,31 @@
             ScoreService.AddScore(new ScoreEntry(playerName, score));
         }
         await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Generates the answer choices for the current question and assigns them to the answerChoices list.
+    /// </summary>
+    /// <remarks>
+    /// <para>This method handles two types of questions:</para>
+    /// <para>- If the question type is "boolean", the choices will be "True" and "False".</para>
+    /// <para>- If the question type is "multiple", the choices will include the correct answer and
+    /// all incorrect answers. The answers are shuffled randomly to ensure fairness in the answer order.</para>
+    /// </remarks>
+    private void GenerateAnswerChoices()
+    {
+        if (currentQuestion.Type == "boolean")
+        {
+            answerChoices = new List<string> { "True", "False" };
+        }
+        else if (currentQuestion.Type == "multiple")
+        {
+            answerChoices = new List<string>(currentQuestion.IncorrectAnswers)
+        {
+            currentQuestion.CorrectAnswer
+        };
+            answerChoices = answerChoices.OrderBy(x => Guid.NewGuid()).ToList();
+        }
     }
 
     /// <summary>
