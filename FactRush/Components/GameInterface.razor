@@ -9,24 +9,24 @@
 {
     <div class="row justify-content-center mb-3 g-2">
         <div class="col-md-5">
-            <button class="btn btn-outline-primary w-100" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer(answerChoices[0])'>
+            <button class="btn btn-outline-primary w-100" @onclick='() => SubmitAnswer(answerChoices[0])'>
                 @answerChoices[0]
             </button>
         </div>
         <div class="col-md-5">
-            <button class="btn btn-outline-primary w-100" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer(answerChoices[1])'>
+            <button class="btn btn-outline-primary w-100" @onclick='() => SubmitAnswer(answerChoices[1])'>
                 @answerChoices[1]
             </button>
         </div>
         @if (answerChoices.Count == 4)
         {
             <div class="col-md-5">
-                <button class="btn btn-outline-primary w-100" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer(answerChoices[2])'>
+                <button class="btn btn-outline-primary w-100" @onclick='() => SubmitAnswer(answerChoices[2])'>
                     @answerChoices[2]
                 </button>
             </div>
             <div class="col-md-5">
-                <button class="btn btn-outline-primary w-100" disabled="@(!answersEnabled)" @onclick='() => SubmitAnswer(answerChoices[3])'>
+                <button class="btn btn-outline-primary w-100" @onclick='() => SubmitAnswer(answerChoices[3])'>
                     @answerChoices[3]
                 </button>
             </div>
@@ -43,9 +43,9 @@
     public Question currentQuestion = new Question { Text = "Loading", CorrectAnswer = "" };
     private readonly static int timer = 50;
     private int timeRemaining = timer;
-    private bool answersEnabled = false;
     private System.Threading.Timer? countdownTimer;
     private List<string> answerChoices = new();
+    private List<Question> questions = new();
 
     /// <summary>
     /// Called when the component is initialized.
@@ -53,7 +53,6 @@
     /// </summary>
     protected override async Task OnInitializedAsync()
     {
-        currentQuestion = new Question { Text = "Loading", CorrectAnswer = "" };
         // Obtenir un token unique au début de la partie
         // Demander un token à l'API d'OpenTDB
         var response = await Http.GetFromJsonAsync<TokenResponse>("https://opentdb.com/api_token.php?command=request");
@@ -61,17 +60,24 @@
         {
             token = response.Token;
         }
-        await LoadNextQuestion();
         GameState.Score = 0;
+
+        questions.AddRange(await Question.LoadQuestions(10));
+        if (questions.Count > 0)
+        {
+            currentQuestion = questions[0];
+            answerChoices = Question.GenerateAnswerChoices(currentQuestion);
+        }
+        StartTimerForCurrentQuestion();
     }
 
     /// <summary>
-    /// Loads the next question from the API and starts a countdown timer.
+    /// Starts a countdown timer for each question
     /// </summary>
-    private async Task LoadNextQuestion()
+    private void StartTimerForCurrentQuestion()
     {
+        Console.WriteLine(currentQuestion);
         timeRemaining = timer;
-        answersEnabled = false;
         countdownTimer?.Dispose();
         countdownTimer = new System.Threading.Timer(async _ =>
         {
@@ -85,27 +91,6 @@
                 await InvokeAsync(StateHasChanged);
             }
         }, null, 1000, 1000);
-
-        _ = Task.Delay(5000).ContinueWith(_ =>
-        {
-            answersEnabled = true;
-            InvokeAsync(StateHasChanged);
-        });
-
-        string url = $"https://opentdb.com/api.php?amount=1&token={token}";
-        var result = await Http.GetFromJsonAsync<QuestionResponse>(url);
-        if (result != null && result.ResponseCode == 0 && result.Questions.Length > 0)
-        {
-            currentQuestion = result.Questions[0];
-            currentQuestion.DecodeHtmlEntities();
-            GenerateAnswerChoices();
-            Console.WriteLine($"New question loaded: {currentQuestion}");
-        }
-        else
-        {
-            Console.WriteLine("No question loaded, ending game.");
-            EndGame();
-        }
     }
 
     /// <summary>
@@ -125,48 +110,45 @@
                 "hard" => 500,
                 _ => 0
             };
-            await LoadNextQuestion();
+
+            questions.RemoveAt(0);
+
+            if (questions.Count == 0)
+            {
+                EndGame();
+                return;
+            }
+            else
+            {
+                currentQuestion = questions[0];
+                answerChoices = Question.GenerateAnswerChoices(currentQuestion);
+
+                Console.WriteLine($"questions.Count = {questions.Count}");
+                if (questions.Count < 5)
+                {
+                    questions.AddRange(await Question.LoadQuestions(5));
+                }
+                StartTimerForCurrentQuestion();
+            }
         }
         else
         {
             EndGame();
+            return;
         }
     }
 
     /// <summary>
-    /// Ends the game, adds the player's score to the top scores list if applicable, and updates the UI.
+    /// Ends the game, adds the player's score to the top scores list if applicable.
     /// </summary>
     private void EndGame()
     {
-        GameState.GameOver = true;
+        Console.WriteLine("Perdu!");
+        gameOver = true;
+        countdownTimer?.Dispose();
         if (GameState.Score > 0)
         {
             TopScoreService.AddScore(new ScoreEntry(GameState.PlayerName, GameState.Score));
-        }
-    }
-
-    /// <summary>
-    /// Generates the answer choices for the current question and assigns them to the answerChoices list.
-    /// </summary>
-    /// <remarks>
-    /// <para>This method handles two types of questions:</para>
-    /// <para>- If the question type is "boolean", the choices will be "True" and "False".</para>
-    /// <para>- If the question type is "multiple", the choices will include the correct answer and
-    /// all incorrect answers. The answers are shuffled randomly to ensure fairness in the answer order.</para>
-    /// </remarks>
-    private void GenerateAnswerChoices()
-    {
-        if (currentQuestion.Type == "boolean")
-        {
-            answerChoices = new List<string> { "True", "False" };
-        }
-        else if (currentQuestion.Type == "multiple")
-        {
-            answerChoices = new List<string>(currentQuestion.IncorrectAnswers)
-        {
-            currentQuestion.CorrectAnswer
-        };
-            answerChoices = answerChoices.OrderBy(x => Guid.NewGuid()).ToList();
         }
     }
 }

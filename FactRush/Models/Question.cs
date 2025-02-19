@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
 namespace FactRush.Models
@@ -54,5 +55,44 @@ namespace FactRush.Models
         /// </summary>
         /// <returns>A formatted string containing the question and its details.</returns>
         public override string ToString() => $"Text: \"{Text}\", CorrectAnswer: \"{CorrectAnswer}\", Difficulty: \"{Difficulty}\"";
+
+        public static async Task<Question[]> LoadQuestions(int amount, string token = "")
+        {
+            Console.WriteLine($"Fetching {amount} more questions");
+            string url = $"https://opentdb.com/api.php?amount={amount}&token={token}";
+            var result = await new HttpClient().GetFromJsonAsync<QuestionResponse>(url);
+            if (result != null && result.ResponseCode == 0 && result.Questions.Length > 0)
+            {
+                foreach (var q in result.Questions)
+                {
+                    q.DecodeHtmlEntities();
+                }
+                return result.Questions;
+            }
+            else
+            {
+                Console.WriteLine("Retrying...");
+                await Task.Delay(5000);
+                return await LoadQuestions(amount, token);
+            }
+        }
+
+        public static List<string> GenerateAnswerChoices(Question question)
+        {
+            if (question.Type == "boolean")
+            {
+                return ["True", "False"];
+            }
+            else if (question.Type == "multiple")
+            {
+                return [.. question.IncorrectAnswers
+                    .Concat([question.CorrectAnswer])
+                    .OrderBy(x => Guid.NewGuid())];
+            }
+            else
+            {
+                return [question.CorrectAnswer];
+            }
+        }
     }
 }
