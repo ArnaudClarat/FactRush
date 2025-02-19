@@ -1,4 +1,4 @@
-﻿using FactRush.Components;
+﻿using FactRush.Models;
 
 namespace FactRush.Tests
 {

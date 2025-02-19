@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json.Serialization;
 
-namespace FactRush.Components
+namespace FactRush.Models
 {
     /// <summary>
     /// Represents the response from the question API.

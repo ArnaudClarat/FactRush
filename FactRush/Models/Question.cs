@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json.Serialization;
 
-namespace FactRush.Components
+namespace FactRush.Models
 {
     /// <summary>
     /// Represents a quiz question fetched from the API.

@@ -1,4 +1,4 @@
-﻿namespace FactRush.Components
+﻿namespace FactRush.Models
 {
     public class TokenResponse
     {
