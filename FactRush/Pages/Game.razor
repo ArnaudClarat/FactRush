@@ -5,7 +5,7 @@
 
 
 <div class="container mt-5 text-center">
-    @if (!GameState.GameOver)
+    @if (!gameOver)
     {
         <GameInterface></GameInterface>
     }
@@ -22,11 +22,13 @@
     // Variables de jeu
     [Parameter]
     public string playerName { get; set; } = "";
+    public bool gameOver { get; set; } = false;
 
     protected override void OnInitialized()
     {
         // Mettre à jour l'état partagé avec le playerName reçu en paramètre
         GameState.PlayerName = playerName;
+        gameOver = GameState.GameOver;
     }
 
     private void RestartGame()
