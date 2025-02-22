@@ -1,6 +1,7 @@
 ﻿@inject HttpClient Http
 @inject FactRush.Services.GameState GameState
 @inject FactRush.Services.TopScoreService TopScoreService
+@inject FactRush.Services.IQuestionService QuestionService
 
 <div class="mb-3">
     <h2>@currentQuestion.Text</h2>
@@ -62,7 +63,7 @@
         }
         GameState.Score = 0;
 
-        questions.AddRange(await Question.LoadQuestions(10));
+        questions.AddRange(await QuestionService.LoadQuestions(10));
         if (questions.Count > 0)
         {
             currentQuestion = questions[0];
@@ -123,10 +124,9 @@
                 currentQuestion = questions[0];
                 answerChoices = Question.GenerateAnswerChoices(currentQuestion);
 
-                Console.WriteLine($"questions.Count = {questions.Count}");
                 if (questions.Count < 5)
                 {
-                    questions.AddRange(await Question.LoadQuestions(5));
+                    questions.AddRange(await QuestionService.LoadQuestions(5));
                 }
                 StartTimerForCurrentQuestion();
             }

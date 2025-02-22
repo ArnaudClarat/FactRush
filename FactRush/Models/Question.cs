@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using FactRush.Services;
 
 namespace FactRush.Models
 {
@@ -55,37 +56,6 @@ namespace FactRush.Models
         /// </summary>
         /// <returns>A formatted string containing the question and its details.</returns>
         public override string ToString() => $"Text: \"{Text}\", CorrectAnswer: \"{CorrectAnswer}\", Difficulty: \"{Difficulty}\"";
-
-        /// <summary>
-        /// Load a given number of questions.
-        /// </summary>
-        /// <param name="amount">The number of question to load. Should be greater than 0.</param>
-        /// <param name="token" optional="true">The optionnal token to use</param>
-        /// <returns>A list of Question object.</returns>
-        public static async Task<Question[]> LoadQuestions(int amount, string token = "")
-        {
-            if (amount <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than 0.");
-            }
-            Console.WriteLine($"Fetching {amount} more questions");
-            string url = $"https://opentdb.com/api.php?amount={amount}&token={token}";
-            var result = await new HttpClient().GetFromJsonAsync<QuestionResponse>(url);
-            if (result != null && result.ResponseCode == 0 && result.Questions.Length == amount)
-            {   
-                foreach (var q in result.Questions)
-                {
-                    q.DecodeHtmlEntities();
-                }
-                return result.Questions;
-            }
-            else
-            {
-                Console.WriteLine("Retrying...");
-                await Task.Delay(5000);
-                return await LoadQuestions(amount, token);
-            }
-        }
 
         /// <summary>
         /// Generates list of the answer's choices.

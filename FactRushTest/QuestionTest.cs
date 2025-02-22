@@ -1,9 +1,16 @@
 ﻿using FactRush.Models;
+using FactRush.Services;
 
 namespace FactRushTest
 {
     public class QuestionTest
     {
+        private readonly QuestionService _questionService;
+
+        public QuestionTest()
+        {
+            _questionService = new QuestionService(new HttpClient());
+        }
 
         [Fact]
         public void Properties_Should_SetAndGet_CorrectValues()
@@ -145,7 +152,7 @@ namespace FactRushTest
             int amount = 5;
 
             // Act: load questions from the API.
-            var questions = await Question.LoadQuestions(amount);
+            var questions = await _questionService.LoadQuestions(amount);
 
             // Assert: ensure the returned array is not null, has the correct number of elements, and that each element is a valid Question.
             Assert.NotNull(questions);
@@ -169,7 +176,7 @@ namespace FactRushTest
             int invalidAmount = 0;
 
             // Act & Assert: verify that calling LoadQuestions with an invalid amount throws the expected exception.
-            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => Question.LoadQuestions(invalidAmount));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _questionService.LoadQuestions(invalidAmount));
         }
     }
 }
