@@ -2,10 +2,11 @@
 @inject NavigationManager Navigation
 @inject FactRush.Services.TopScoreService ScoreService
 @inject FactRush.Services.GameState GameState
+@implements IDisposable
 
 
 <div class="container mt-5 text-center">
-    @if (!gameOver)
+    @if (!GameState.GameOver)
     {
         <GameInterface></GameInterface>
     }
@@ -22,18 +23,22 @@
     // Variables de jeu
     [Parameter]
     public string playerName { get; set; } = "";
-    public bool gameOver { get; set; } = false;
 
     protected override void OnInitialized()
     {
         // Mettre à jour l'état partagé avec le playerName reçu en paramètre
         GameState.PlayerName = playerName;
-        gameOver = GameState.GameOver;
+        GameState.OnChange += StateHasChanged;
     }
 
     private void RestartGame()
     {
         GameState.Score = 0;
         GameState.GameOver = false;
+    }
+
+    public void Dispose()
+    {
+        GameState.OnChange -= StateHasChanged;
     }
 }

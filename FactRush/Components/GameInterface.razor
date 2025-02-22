@@ -46,8 +46,6 @@
     private System.Threading.Timer? countdownTimer;
     private List<string> answerChoices = new();
     private List<Question> questions = new();
-    [CascadingParameter]
-    public bool gameOver { get; set; }
 
     /// <summary>
     /// Called when the component is initialized.
@@ -146,7 +144,7 @@
     private void EndGame()
     {
         Console.WriteLine("Perdu!");
-        gameOver = true;
+        GameState.GameOver = true;
         countdownTimer?.Dispose();
         if (GameState.Score > 0)
         {

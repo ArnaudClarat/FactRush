@@ -5,6 +5,7 @@
     /// </summary>
     public class GameState
     {
+        private bool _gameOver = false;
         /// <summary>
         /// Gets or sets the player's name.
         /// </summary>
@@ -18,6 +19,18 @@
         /// <summary>
         /// Indicates whether the game is over.
         /// </summary>
-        public bool GameOver { get; set; } = false;
+        public bool GameOver
+        {
+            get => _gameOver;
+            set
+            {
+                _gameOver = value;
+                NotifyStateChanged();
+            }
+        }
+
+        public event Action? OnChange;
+
+        private void NotifyStateChanged() => OnChange?.Invoke();
     }
 }
