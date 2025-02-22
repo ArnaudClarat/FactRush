@@ -30,10 +30,9 @@
         public void AddScore(ScoreEntry entry)
         {
             TopScores.Add(entry);
-            TopScores = TopScores
+            TopScores = [.. TopScores
                 .OrderByDescending(s => s.Score)
-                .Take(10)
-                .ToList();
+                .Take(10)];
         }
     }
 

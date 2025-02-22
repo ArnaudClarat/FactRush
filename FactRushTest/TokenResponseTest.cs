@@ -1,14 +1,16 @@
 ﻿using FactRush.Models;
 
-namespace FactRush.Tests.Components
+namespace FactRushTest
 {
     public class TokenResponseTests
     {
         [Fact]
         public void TokenResponse_Should_Initialize_With_Default_Values()
         {
+            // Arrange: Create a new TokenResponse instance without setting any properties.
             var tokenResponse = new TokenResponse();
 
+            // Assert: Verify that the default values match the expected ones.
             Assert.Equal(0, tokenResponse.ResponseCode);
             Assert.Equal("", tokenResponse.ResponseMessage);
             Assert.Equal("", tokenResponse.Token);
@@ -17,37 +19,42 @@ namespace FactRush.Tests.Components
         [Fact]
         public void TokenResponse_Should_Set_ResponseCode()
         {
-            var tokenResponse = new TokenResponse();
+            // Arrange: Create a new TokenResponse instance.
+            var tokenResponse = new TokenResponse
+            {
+                // Act: Set the ResponseCode property.
+                ResponseCode = 200
+            };
 
-            tokenResponse.ResponseCode = 200;
-
-            // Assert
+            // Assert: Verify that the ResponseCode property returns the expected value.
             Assert.Equal(200, tokenResponse.ResponseCode);
         }
 
         [Fact]
         public void TokenResponse_Should_Set_ResponseMessage()
         {
-            // Arrange
-            var tokenResponse = new TokenResponse();
+            // Arrange: Create a new TokenResponse instance.
+            var tokenResponse = new TokenResponse
+            {
+                // Act: Set the ResponseMessage property.
+                ResponseMessage = "Success"
+            };
 
-            // Act
-            tokenResponse.ResponseMessage = "Success";
-
-            // Assert
+            // Assert: Verify that the ResponseMessage property returns the expected value.
             Assert.Equal("Success", tokenResponse.ResponseMessage);
         }
 
         [Fact]
         public void TokenResponse_Should_Set_Token()
         {
-            // Arrange
-            var tokenResponse = new TokenResponse();
+            // Arrange: Create a new TokenResponse instance.
+            var tokenResponse = new TokenResponse
+            {
+                // Act: Set the Token property.
+                Token = "abcd1234"
+            };
 
-            // Act
-            tokenResponse.Token = "abcd1234";
-
-            // Assert
+            // Assert: Verify that the Token property returns the expected value.
             Assert.Equal("abcd1234", tokenResponse.Token);
         }
     }
