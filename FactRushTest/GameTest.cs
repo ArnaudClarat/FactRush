@@ -114,7 +114,7 @@ namespace FactRushTest
         [Fact]
         public async Task Home_Should_Display_TopScore()
         {
-            Setup<String>("localStorage.getItem", "topScores")
+            Setup<String>("localStorage.getItem", "topScores");
             // Arrange: Render the Home page
             var gameComponent = RenderComponent<FactRush.Pages.Home>();
 

@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace FactRush.Services
 {
-    public class LocalStorageService(IJSRuntime jsRuntime)
+    public class LocalStorageService(IJSRuntime jsRuntime) : ILocalStorageService
     {
         private readonly IJSRuntime JsRuntime = jsRuntime;
 

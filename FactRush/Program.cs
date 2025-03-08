@@ -8,8 +8,8 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
-builder.Services.AddSingleton<LocalStorageService>();
 builder.Services.AddScoped<TopScoreService>();
 builder.Services.AddSingleton<GameState>();
 

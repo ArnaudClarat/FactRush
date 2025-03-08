@@ -21,7 +21,7 @@ namespace FactRush.Services
         private const string TopScoresKey = "topScores";
 
         // The local storage service dependency for persisting data.
-        private readonly LocalStorageService _localStorageService;
+        private readonly ILocalStorageService _localStorageService;
 
         /// <summary>
         /// Gets the list of top scores.
@@ -39,7 +39,7 @@ namespace FactRush.Services
         /// The TopScores list is initially set to default values.
         /// </summary>
         /// <param name="localStorageService">An instance of LocalStorageService for data persistence.</param>
-        public TopScoreService(LocalStorageService localStorageService)
+        public TopScoreService(ILocalStorageService localStorageService)
         {
             _localStorageService = localStorageService;
             // Initialize with default scores.

@@ -3,10 +3,10 @@ using FactRush.Models;
 
 namespace FactRush.Services
 {
-    public class QuestionService(HttpClient httpClient, LocalStorageService localStorageService) : IQuestionService
+    public class QuestionService(HttpClient httpClient, ILocalStorageService localStorageService) : IQuestionService
     {
         private readonly HttpClient HttpClient = httpClient;
-        private readonly LocalStorageService LocalStorageService = localStorageService;
+        private readonly ILocalStorageService LocalStorageService = localStorageService;
 
         public async Task<Question[]> LoadQuestions(int amount, string token = "")
         {

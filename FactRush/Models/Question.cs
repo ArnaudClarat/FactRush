@@ -54,9 +54,9 @@ namespace FactRush.Models
             IncorrectAnswers = Array.ConvertAll(IncorrectAnswers, x => WebUtility.HtmlDecode(x)!);
         }
 
-        public async Task SetIsFavorite(LocalStorageService localStorageService)
+        public async Task SetIsFavorite(ILocalStorageService localStorageService)
         {
-            var favorites = await localStorageService.GetItemAsync<List<Question>>("favorites") ?? new List<Question>();
+            var favorites = await localStorageService.GetItemAsync<List<Question>>("favorites") ?? [];
             IsFavorite = favorites.Any(q => q.Text == Text);
         }
 
