@@ -13,7 +13,12 @@
             </div>
         </div>
     </div>
-    <button class="btn btn-primary btn-lg mb-4" @onclick='() => Navigation.NavigateTo($"/game/{playerName}")'>Let's play!</button>
+    <button class="btn btn-primary btn-lg mb-4"
+            disabled="@string.IsNullOrWhiteSpace(playerName)"
+            title=@((string.IsNullOrWhiteSpace(playerName)) ? "Please enter a username" : "")
+            @onclick='() => Navigation.NavigateTo($"/game/{playerName}")'>
+        Let's play!
+    </button>
     <TopScores></TopScores>
 </div>
 
