@@ -3,9 +3,10 @@ using FactRush.Models;
 
 namespace FactRush.Services
 {
-    public class QuestionService(HttpClient httpClient) : IQuestionService
+    public class QuestionService(HttpClient httpClient, LocalStorageService localStorageService) : IQuestionService
     {
         private readonly HttpClient HttpClient = httpClient;
+        private readonly LocalStorageService LocalStorageService = localStorageService;
 
         public async Task<Question[]> LoadQuestions(int amount, string token = "")
         {
@@ -21,6 +22,7 @@ namespace FactRush.Services
                 foreach (var q in result.Questions)
                 {
                     q.DecodeHtmlEntities();
+                    await q.SetIsFavorite(LocalStorageService);
                 }
                 return result.Questions;
             }

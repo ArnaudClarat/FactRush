@@ -1,0 +1,54 @@
+﻿@page "/favorites"
+@inject NavigationManager Navigation
+@inject FactRush.Services.LocalStorageService LocalStorageService
+
+<h3 style ="margin: 10px">Favorite Questions</h3>
+
+@if (favoriteQuestions == null)
+{
+    <p>Loading...</p>
+}
+else if (favoriteQuestions.Count == 0)
+{
+    <p>No favorite questions.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var question in favoriteQuestions)
+        {
+            <li class="list-group-item justify-content-between align-items-center">
+                @question.Text
+                <button class="btn btn-danger btn-sm" title="Delete this favorite" @onclick="() => DeleteFavorite(question)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </li>
+        }
+    </ul>
+}
+
+<button class="btn btn-primary" style="margin: 10px" @onclick='()=> Navigation.NavigateTo("/")'>Home</button>
+
+@code {
+    // Holds the list of favorite questions.
+    private List<Question> favoriteQuestions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load favorites from local storage; if null, initialize as an empty list.
+        favoriteQuestions = await LocalStorageService.GetItemAsync<List<Question>>("favorites")
+                            ?? new List<Question>();
+    }
+
+    /// <summary>
+    /// Deletes a single favorite question from the list and updates local storage.
+    /// </summary>
+    /// <param name="question">The favorite question to delete.</param>
+    private async Task DeleteFavorite(Question question)
+    {
+        // Remove the selected question from the favorites list.
+        favoriteQuestions.Remove(question);
+        // Update local storage with the modified list.
+        await LocalStorageService.SetItemAsync("favorites", favoriteQuestions);
+    }
+}

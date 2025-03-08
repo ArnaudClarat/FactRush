@@ -1,6 +1,6 @@
 ﻿@page "/"
 @inject NavigationManager Navigation
-@inject FactRush.Services.TopScoreService ScoreService
+@inject TopScoreService TopScoreService
 
 <div class="container mt-5 text-center">
     <h1 class="display-4">QuizRush</h1>
@@ -19,10 +19,17 @@
             @onclick='() => Navigation.NavigateTo($"/game/{playerName}")'>
         Let's play!
     </button>
+    <br/>
+    <button class="btn btn-outline-secondary" @onclick='() => Navigation.NavigateTo("/favorites")'>Favorites</button>
     <TopScores></TopScores>
 </div>
 
 
 @code {
     private string playerName = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await TopScoreService.InitializeAsync();
+    }
 }

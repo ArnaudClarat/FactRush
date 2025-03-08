@@ -2,9 +2,13 @@
 @inject FactRush.Services.GameState GameState
 @inject FactRush.Services.TopScoreService TopScoreService
 @inject FactRush.Services.IQuestionService QuestionService
+@inject FactRush.Services.LocalStorageService LocalStorageService
 
 <div class="mb-3">
     <h2>@currentQuestion.Text</h2>
+    <button class="btn btn-outline-secondary" @onclick="ToggleFavorite">
+        @(currentQuestion.IsFavorite ? "Remove from Favorites" : "Add to Favorites")
+    </button>
 </div>
 @if (answerChoices != null && answerChoices.Count >= 2)
 {
@@ -72,6 +76,21 @@
         StartTimerForCurrentQuestion();
     }
 
+    private async Task ToggleFavorite()
+    {
+        var favorites = await LocalStorageService.GetItemAsync<List<Question>>("favorites") ?? new List<Question>();
+        if (currentQuestion.IsFavorite)
+        {
+            favorites.RemoveAll(q => q.Text == currentQuestion.Text);
+        }
+        else
+        {
+            favorites.Add(currentQuestion);
+        }
+        await LocalStorageService.SetItemAsync("favorites", favorites);
+        currentQuestion.IsFavorite = !currentQuestion.IsFavorite;
+    }
+
     /// <summary>
     /// Starts a countdown timer for each question
     /// </summary>
@@ -116,7 +135,7 @@
 
             if (questions.Count == 0)
             {
-                EndGame();
+                await EndGame();
                 return;
             }
             else
@@ -133,7 +152,7 @@
         }
         else
         {
-            EndGame();
+            await EndGame();
             return;
         }
     }
@@ -141,14 +160,14 @@
     /// <summary>
     /// Ends the game, adds the player's score to the top scores list if applicable.
     /// </summary>
-    private void EndGame()
+    private async Task EndGame()
     {
         Console.WriteLine("Perdu!");
         GameState.GameOver = true;
         countdownTimer?.Dispose();
         if (GameState.Score > 0)
         {
-            TopScoreService.AddScore(new ScoreEntry(GameState.PlayerName, GameState.Score));
+            await TopScoreService.AddScoreAsync(new ScoreEntry(GameState.PlayerName, GameState.Score));
         }
     }
 }

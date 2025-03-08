@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using FactRush.Services;
 
@@ -40,6 +39,10 @@ namespace FactRush.Models
         /// </summary>
         [JsonPropertyName("incorrect_answers")]
         public string[] IncorrectAnswers { get; set; } = [];
+        /// <summary>
+        /// Indicates whether the question is marked as favorite.
+        /// </summary>
+        public bool IsFavorite { get; set; } = false;
 
         /// <summary>
         /// Decodes HTML entities in the question text and answers.
@@ -49,6 +52,12 @@ namespace FactRush.Models
             Text = WebUtility.HtmlDecode(Text);
             CorrectAnswer = WebUtility.HtmlDecode(CorrectAnswer);
             IncorrectAnswers = Array.ConvertAll(IncorrectAnswers, x => WebUtility.HtmlDecode(x)!);
+        }
+
+        public async Task SetIsFavorite(LocalStorageService localStorageService)
+        {
+            var favorites = await localStorageService.GetItemAsync<List<Question>>("favorites") ?? new List<Question>();
+            IsFavorite = favorites.Any(q => q.Text == Text);
         }
 
         /// <summary>
