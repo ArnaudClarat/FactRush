@@ -24,7 +24,7 @@ namespace FactRushTest.Services
             if (request.RequestUri.AbsoluteUri.Contains("api_token.php"))
             {
                 Debug.WriteLine("Returning dummy token...");
-                var json = JsonSerializer.Serialize(new { response_code = 0, token = "dummy_tocken" });
+                var json = JsonSerializer.Serialize(new { response_code = 0, token = "dummy_token" });
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent(json)

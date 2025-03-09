@@ -67,7 +67,7 @@
         }
         GameState.Score = 0;
 
-        questions.AddRange(await QuestionService.LoadQuestions(10));
+        questions.AddRange(await QuestionService.LoadQuestions(10, token));
         if (questions.Count > 0)
         {
             currentQuestion = questions[0];
