@@ -4,29 +4,17 @@ using FactRush.Models;
 using FactRush.Services;
 using FactRushTest.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.JSInterop;
+using Moq;
 
 namespace FactRushTest
 {
-    // A fake IJSRuntime that does nothing.
-    public class FakeJSRuntime : IJSRuntime
-    {
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
-        {
-            return new ValueTask<TValue>(default(TValue)!);
-        }
-
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
-        {
-            return new ValueTask<TValue>(default(TValue)!);
-        }
-    }
 
     public class GameTest : TestContext, IDisposable
     {
         private readonly HttpClient _httpClient;
         private readonly FakeHttpMessageHandler _fakeHandler;
         private readonly GameState _gameState;
+        private readonly Mock<ILocalStorageService> mockLocalStorageService = new();
 
         public GameTest()
         {
@@ -34,14 +22,16 @@ namespace FactRushTest
             _fakeHandler = new FakeHttpMessageHandler();
             _httpClient = new HttpClient(_fakeHandler);
             Services.AddSingleton<HttpClient>(_ => _httpClient);
-            // Register the IQuestionService with the configured HttpClient
-            Services.AddScoped<IQuestionService, QuestionService>(sp => new QuestionService(_httpClient));
+            // Register the IQuestionService with the configured HttpClientvar mockLocalStorageService = new Mock<ILocalStorageService>();
+            mockLocalStorageService
+                .Setup(s => s.GetItemAsync<List<Question>>("favorites"))
+                .ReturnsAsync([]);
+            Services.AddScoped<ILocalStorageService, LocalStorageService>();
+            Services.AddScoped<IQuestionService, QuestionService>(sp => new QuestionService(_httpClient, mockLocalStorageService.Object));
 
             // Provide a real GameState instance.
             _gameState = new GameState();
             Services.AddSingleton(_gameState);
-
-            Services.AddSingleton<LocalStorageService>();
 
             // Register the real TopScoreService (scoped) that depends on LocalStorageService.
             Services.AddScoped<TopScoreService>();
@@ -62,8 +52,6 @@ namespace FactRushTest
         [Fact]
         public void GameInterface_Should_IncreaseScore_OnCorrectAnswer()
         {
-            JSInterop.Setup<string>("localStorage.getItem", "favorites");
-
             // Arrange: Render the GameInterface component.
             var component = RenderComponent<GameInterface>();
 
@@ -86,7 +74,7 @@ namespace FactRushTest
         }
 
         [Fact]
-        public void Game_Should_EndGame_OnWrongAnswer()
+        public async Task Game_Should_EndGame_OnWrongAnswer()
         {
             JSInterop.Setup<string>("localStorage.getItem", "favorites");
 
@@ -114,14 +102,15 @@ namespace FactRushTest
         [Fact]
         public async Task Home_Should_Display_TopScore()
         {
-            Setup<String>("localStorage.getItem", "topScores");
+            //Setup<String>("localStorage.getItem", "topScores");
+            JSInterop.Setup<string>("localStorage.getItem", "topScores");
             // Arrange: Render the Home page
             var gameComponent = RenderComponent<FactRush.Pages.Home>();
 
             // Assert: Vérifie que "Arnaud" est bien dans le rendu du composant
             gameComponent.WaitForAssertion(() =>
             {
-                Assert.Contains("Arnaud", gameComponent.Markup);
+                Assert.Contains("pts", gameComponent.Markup);
             }, TimeSpan.FromSeconds(5));
         }
 

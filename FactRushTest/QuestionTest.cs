@@ -1,5 +1,6 @@
 ﻿using FactRush.Models;
 using FactRush.Services;
+using Moq;
 
 namespace FactRushTest
 {
@@ -9,13 +10,18 @@ namespace FactRushTest
     public class QuestionTest
     {
         private readonly QuestionService _questionService;
+        private readonly Mock<ILocalStorageService> _localStorageService;
 
         /// <summary>
         /// Constructor that initializes the QuestionService with a new HttpClient.
         /// </summary>
         public QuestionTest()
         {
-            _questionService = new QuestionService(new HttpClient());
+            _localStorageService = new Mock<ILocalStorageService>();
+            _localStorageService
+                .Setup(s => s.GetItemAsync<List<Question>>("favorites"))
+                .ReturnsAsync([]);
+            _questionService = new QuestionService(new HttpClient(), _localStorageService.Object);
         }
 
         /// <summary>
@@ -32,7 +38,8 @@ namespace FactRushTest
                 Difficulty = "medium",
                 Text = "What is the chemical symbol for water?",
                 CorrectAnswer = "H2O",
-                IncorrectAnswers = ["O2", "HO", "H3O"]
+                IncorrectAnswers = ["O2", "HO", "H3O"],
+                IsFavorite = false
             };
 
             // Act & Assert: Verify each property has the expected value.
@@ -42,6 +49,7 @@ namespace FactRushTest
             Assert.Equal("What is the chemical symbol for water?", question.Text);
             Assert.Equal("H2O", question.CorrectAnswer);
             Assert.Equal(["O2", "HO", "H3O"], question.IncorrectAnswers);
+            Assert.False(question.IsFavorite);
         }
 
         /// <summary>
@@ -212,6 +220,44 @@ namespace FactRushTest
 
             // Act & Assert: Verify that calling LoadQuestions with an invalid amount throws the expected exception.
             await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _questionService.LoadQuestions(invalidAmount));
+        }
+
+        [Fact]
+        public async Task SetIsFavorite_Should_SetIsFavorite_ToTrue_WhenFavoritesContainMatchingQuestion()
+        {
+            // Arrange
+            var question = new Question { Text = "Test Question" };
+            var favorites = new List<Question>{question};
+
+            var localStorageServiceMock = new Mock<ILocalStorageService>();
+            localStorageServiceMock
+                .Setup(s => s.GetItemAsync<List<Question>>("favorites"))
+                .ReturnsAsync(favorites);
+
+            // Act
+            await question.SetIsFavorite(localStorageServiceMock.Object);
+
+            // Assert
+            Assert.True(question.IsFavorite);
+        }
+
+        [Fact]
+        public async Task SetIsFavorite_Should_SetIsFavorite_ToFalse_WhenFavoritesDoNotContainMatchingQuestion()
+        {
+            // Arrange
+            var question = new Question { Text = "Test Question" };
+            var favorites = new List<Question>{new() { Text = "Another Question" } };
+
+            var localStorageServiceMock = new Mock<ILocalStorageService>();
+            localStorageServiceMock
+                .Setup(s => s.GetItemAsync<List<Question>>("favorites"))
+                .ReturnsAsync(favorites);
+
+            // Act
+            await question.SetIsFavorite(localStorageServiceMock.Object);
+
+            // Assert
+            Assert.False(question.IsFavorite);
         }
     }
 }
