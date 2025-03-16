@@ -28,6 +28,7 @@
     {
         // Mettre à jour l'état partagé avec le playerName reçu en paramètre
         GameState.PlayerName = playerName;
+        GameState.GameOver = false;
         GameState.OnChange += StateHasChanged;
     }
 
